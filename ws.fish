@@ -1,11 +1,13 @@
 #!/usr/bin/env fish
 
-# ws - split current tmux pane into Claude Code (70%) + Yazi (30%)
+# ws - tmux workspace launcher with session type selector
 # Usage:
-#   ws [directory]            Claude Code + Yazi
-#   ws --docker [directory]   Claude Code (yolo mode in Docker) + Yazi
+#   ws [directory]            Interactive session picker
+#   ws --docker [directory]   Skip menu, go straight to YOLO mode
+#   ws --code [directory]     Skip menu, go straight to Code mode
 
 set -l docker_mode false
+set -l code_mode false
 set -l target_dir ""
 
 # Parse arguments
@@ -13,6 +15,8 @@ for arg in $argv
     switch $arg
         case -d --docker
             set docker_mode true
+        case -c --code
+            set code_mode true
         case '*'
             set target_dir $arg
     end
@@ -38,31 +42,90 @@ if not test -d $target_dir
     exit 1
 end
 
-# Build the claude launch command
+# Determine session type
+set -l session_type ""
+
 if test "$docker_mode" = true
-    # Ensure docker image is built
-    set -l script_dir (status dirname)
-    set -l image_name "claude-yolo"
-
-    if not docker image inspect $image_name &>/dev/null
-        echo "Building $image_name Docker image..."
-        docker build -t $image_name $script_dir
-    end
-
-    set claude_cmd "docker run -it --rm \
-        -e ANTHROPIC_API_KEY=\$ANTHROPIC_API_KEY \
-        -v $target_dir:/workspace \
-        $image_name"
-
-    tmux rename-window "yolo"
+    set session_type yolo
+else if test "$code_mode" = true
+    set session_type code
 else
-    set claude_cmd "cd $target_dir && claude"
-    tmux rename-window "code"
+    # Interactive session picker
+    echo ""
+    set_color --bold white
+    echo "  Select session type:"
+    set_color normal
+    echo ""
+    set_color brblue
+    echo "  1) Code   — Claude Code + Yazi"
+    set_color bryellow
+    echo "  2) YOLO   — Claude Code in Docker + Yazi"
+    set_color brgreen
+    echo "  3) Files  — Midnight Commander"
+    set_color brwhite
+    echo "  4) Shell  — Plain fish shell"
+    set_color normal
+    echo ""
+
+    read -P "  > " -n 1 choice
+
+    switch $choice
+        case 1 c
+            set session_type code
+        case 2 y
+            set session_type yolo
+        case 3 m f
+            set session_type files
+        case 4 s
+            set session_type shell
+        case '*'
+            echo "Cancelled."
+            exit 0
+    end
 end
 
-# Split right pane (30%) for yazi
-tmux split-window -h -p 30 -c $target_dir "yazi $target_dir"
+# Launch the selected session type
+switch $session_type
+    case code
+        tmux rename-window "code"
+        tmux split-window -v -p 20 -c $target_dir
+        tmux select-pane -U
+        tmux split-window -h -p 30 -c $target_dir
+        tmux send-keys "cd $target_dir && claude" C-m
+        tmux select-pane -L
+        tmux send-keys "yazi $target_dir" C-m
 
-# Left pane (auto 70%) runs claude
-tmux select-pane -L
-tmux send-keys "$claude_cmd" C-m
+    case yolo
+        # Ensure docker image is built
+        set -l script_dir (status dirname)
+        set -l image_name "claude-yolo"
+
+        if not docker image inspect $image_name &>/dev/null
+            echo "Building $image_name Docker image..."
+            docker build -t $image_name $script_dir
+        end
+
+        if not test -f ~/.claude/.credentials.json
+            echo "Error: ~/.claude/.credentials.json not found. Run 'claude' to authenticate first."
+            exit 1
+        end
+
+        set -l claude_bin (readlink -f ~/.local/bin/claude)
+        set claude_cmd "docker run -it --rm -v \$HOME/.claude:/home/coder/.claude -v \$HOME/.claude.json:/home/coder/.claude.json -v $claude_bin:/usr/local/bin/claude:ro -v \"$target_dir\":/workspace $image_name"
+
+        tmux rename-window "yolo"
+        tmux split-window -v -p 20 -c $target_dir
+        tmux select-pane -U
+        tmux split-window -h -p 30 -c $target_dir
+        tmux send-keys "$claude_cmd" C-m
+        tmux select-pane -L
+        tmux send-keys "yazi $target_dir" C-m
+
+    case files
+        tmux rename-window "files"
+        tmux send-keys "mc $target_dir" C-m
+
+    case shell
+        tmux rename-window "shell"
+        tmux send-keys "cd $target_dir" C-m
+end
