@@ -4,7 +4,7 @@ set -euo pipefail
 # ============================================
 # CLI Setup — Debian-based VPS
 # Installs: tmux, fish, yazi, mc, claude code
-# Configures: tmux.conf, ws script
+# Configures: tmux.conf, yazi.toml, ws script
 # ============================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -63,8 +63,14 @@ if command -v docker &>/dev/null; then
 else
     info "Installing Docker..."
     curl -fsSL https://get.docker.com | sudo bash
-    sudo usermod -aG docker "$USER"
-    ok "Docker installed (re-login for group to take effect)"
+    ok "Docker installed"
+fi
+
+CURRENT_USER="${USER:-$(whoami)}"
+if ! groups "$CURRENT_USER" | grep -qw docker; then
+    info "Adding $CURRENT_USER to docker group..."
+    sudo usermod -aG docker "$CURRENT_USER"
+    ok "Added $CURRENT_USER to docker group (re-login or run 'newgrp docker' for it to take effect)"
 fi
 
 if docker image inspect claude-yolo &>/dev/null 2>&1; then
@@ -80,15 +86,20 @@ fi
 # ============================================
 YAZI_FLAVOR_DIR="$HOME/.config/yazi/flavors/dracula.yazi"
 if [ -d "$YAZI_FLAVOR_DIR" ]; then
-    ok "yazi dracula theme already installed"
+    ok "yazi dracula flavor already installed"
 else
-    info "Installing yazi Dracula theme..."
+    info "Installing yazi Dracula flavor..."
     mkdir -p "$HOME/.config/yazi/flavors"
-    git clone https://github.com/dracula/yazi.git "$YAZI_FLAVOR_DIR"
-    ok "yazi Dracula theme installed"
+    TMP_DIR=$(mktemp -d)
+    git clone https://github.com/yazi-rs/flavors.git "$TMP_DIR"
+    cp -r "$TMP_DIR/dracula.yazi" "$YAZI_FLAVOR_DIR"
+    rm -rf "$TMP_DIR"
+    ok "yazi Dracula flavor installed"
 fi
 ln -sf "$SCRIPT_DIR/yazi-theme.toml" "$HOME/.config/yazi/theme.toml"
 ok "~/.config/yazi/theme.toml -> $SCRIPT_DIR/yazi-theme.toml"
+ln -sf "$SCRIPT_DIR/yazi.toml" "$HOME/.config/yazi/yazi.toml"
+ok "~/.config/yazi/yazi.toml -> $SCRIPT_DIR/yazi.toml"
 
 # ============================================
 # 6. tmux config
@@ -130,7 +141,4 @@ echo "    2. Launch workspace:    ws ~/my-project"
 echo "    3. Launch yolo mode:    ws --docker ~/my-project"
 echo "    4. Switch panes:        C-a h / C-a l"
 echo "    5. Window presets:      C-a w"
-echo ""
-echo "  Optional — set fish as default shell:"
-echo "    chsh -s $(which fish)"
 echo ""
