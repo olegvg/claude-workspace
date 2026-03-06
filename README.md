@@ -8,7 +8,9 @@ Terminal workspace for Claude Code on a Debian-based VPS. Splits tmux into a VSC
 |------|---------|
 | `setup.sh` | Installs dependencies and links configs |
 | `tmux.conf` | tmux config — C-a prefix, true-color, vi keys, mouse, status bar |
-| `ws.fish` | Splits current tmux pane: Claude Code (70%) + Yazi (30%) |
+| `ws.fish` | Workspace launcher: Yazi + Claude Code + Shell pane |
+| `yazi.toml` | Yazi config (panel ratios) |
+| `yazi-theme.toml` | Yazi theme config (Dracula flavor) |
 | `Dockerfile` | Debian-based container for Claude Code yolo mode |
 
 ## Install
@@ -42,12 +44,11 @@ ws -d                     # yolo mode, current directory
 This gives you:
 
 ```
-┌──────────────────────────┬────────────┐
-│                          │            │
-│      Claude Code         │   Yazi     │
-│        (70%)             │   (30%)    │
-│                          │            │
-└──────────────────────────┴────────────┘
+┌──────────────┬───────────┐
+│   Yazi (70%) │Claude(30%)│
+├──────────────┴───────────┤
+│        Shell (20%)       │
+└──────────────────────────┘
 ```
 
 Press `C-a w` to open the window preset menu:
@@ -63,8 +64,8 @@ Press `C-a w` to open the window preset menu:
 └──────────────────────────┘
 ```
 
-- **Code** — Claude Code (70%) + Yazi (30%) split
-- **YOLO** — Claude Code in Docker (`--dangerously-skip-permissions`) + Yazi
+- **Code** — Yazi (70%) + Claude Code (30%) + Shell pane
+- **YOLO** — Yazi + Claude Code in Docker (`--dangerously-skip-permissions`) + Shell pane
 - **Files** — Full-screen Midnight Commander
 - **Shell** — Plain shell
 

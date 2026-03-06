@@ -7,7 +7,9 @@ Terminal workspace for Claude Code on Debian-based VPS servers. Provides a VSCod
 ```
 setup.sh       — Install script (apt packages, yazi, claude, docker, configs)
 tmux.conf      — tmux config (C-a prefix, true-color, vi keys, window presets)
-ws.fish        — Split-pane launcher: Claude Code (70%) + Yazi (30%)
+ws.fish        — Workspace launcher: Yazi + Claude Code + Shell pane
+yazi.toml      — Yazi config (panel ratios)
+yazi-theme.toml — Yazi theme config (Dracula)
 Dockerfile     — Container for Claude Code yolo mode (--dangerously-skip-permissions)
 README.md      — User-facing documentation
 ```
