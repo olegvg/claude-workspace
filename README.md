@@ -2,6 +2,8 @@
 
 Terminal workspace for Claude Code on a Debian-based VPS. Splits tmux into a VSCode-like layout with Claude Code and Yazi file browser side by side.
 
+![cli-setup demo](claude-workspace-demo.gif)
+
 ## What's included
 
 | File | Purpose |
