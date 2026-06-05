@@ -13,6 +13,7 @@ Terminal workspace for Claude Code on a Debian-based VPS. Splits tmux into a VSC
 | `ws.fish` | Workspace launcher: Yazi + Claude Code + Shell pane |
 | `yazi.toml` | Yazi config (panel ratios) |
 | `yazi-theme.toml` | Yazi theme config (Dracula flavor) |
+| `yazi-keymap.toml` | Yazi keymap overrides (path-from-root plugin) |
 | `Dockerfile` | Debian-based container for Claude Code yolo mode |
 
 ## Install
@@ -126,6 +127,15 @@ Then use `ws --docker` or press `y` in the `C-a w` menu.
 | `C-a r` | Reload tmux config |
 | `C-a d` | Detach session |
 | `C-a [` | Enter copy mode (vi keys) |
+
+### Yazi
+
+| Key | Action |
+|-----|--------|
+| `c c` | Copy absolute path (built-in) |
+| `c r` | Copy path relative to git root ([path-from-root](https://github.com/aresler/path-from-root.yazi)) |
+
+`c r` requires the file to be tracked in the git index.
 
 ## Requirements
 

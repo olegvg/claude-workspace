@@ -1,0 +1,10 @@
+# Yazi keymap overrides.
+# prepend_keymap entries take priority over Yazi's built-in defaults.
+
+# path-from-root.yazi — copy a file's path relative to the git root.
+# `cr` extends Yazi's built-in copy-path menu (cc / cd / cf / cn).
+# The file must be tracked in the git index.
+[[mgr.prepend_keymap]]
+on   = [ "c", "r" ]
+run  = "plugin path-from-root"
+desc = "Copy path relative to git root"

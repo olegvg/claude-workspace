@@ -25,9 +25,11 @@ info "Installing tmux, fish, mc..."
 sudo apt-get install -y -qq tmux fish mc
 
 # ============================================
-# 2. Yazi (from GitHub releases)
+# 2. Yazi + ya CLI (from GitHub releases)
 # ============================================
-if command -v yazi &>/dev/null; then
+# The release archive ships both binaries: yazi (the file manager) and
+# ya (its package-manager / CLI, needed for `ya pkg add`). Install both.
+if command -v yazi &>/dev/null && command -v ya &>/dev/null; then
     ok "yazi already installed: $(yazi --version)"
 else
     info "Installing yazi from GitHub releases..."
@@ -39,7 +41,8 @@ else
     curl -fsSL "$YAZI_URL" -o "$TMP_DIR/$YAZI_ARCHIVE"
     unzip -q "$TMP_DIR/$YAZI_ARCHIVE" -d "$TMP_DIR"
     sudo cp "$TMP_DIR"/yazi-x86_64-unknown-linux-gnu/yazi /usr/local/bin/yazi
-    sudo chmod +x /usr/local/bin/yazi
+    sudo cp "$TMP_DIR"/yazi-x86_64-unknown-linux-gnu/ya   /usr/local/bin/ya
+    sudo chmod +x /usr/local/bin/yazi /usr/local/bin/ya
     rm -rf "$TMP_DIR"
     ok "yazi installed: $(yazi --version)"
 fi
@@ -82,7 +85,7 @@ else
 fi
 
 # ============================================
-# 5. Yazi Dracula theme
+# 5. Yazi config (theme, plugins, keymap)
 # ============================================
 YAZI_FLAVOR_DIR="$HOME/.config/yazi/flavors/dracula.yazi"
 if [ -d "$YAZI_FLAVOR_DIR" ]; then
@@ -96,10 +99,22 @@ else
     rm -rf "$TMP_DIR"
     ok "yazi Dracula flavor installed"
 fi
+
+# path-from-root: copy a file's path relative to the git root (bound to `cr`)
+if [ -d "$HOME/.config/yazi/plugins/path-from-root.yazi" ]; then
+    ok "path-from-root plugin already installed"
+else
+    info "Installing path-from-root plugin..."
+    ya pkg add aresler/path-from-root
+    ok "path-from-root plugin installed"
+fi
+
 ln -sf "$SCRIPT_DIR/yazi-theme.toml" "$HOME/.config/yazi/theme.toml"
 ok "~/.config/yazi/theme.toml -> $SCRIPT_DIR/yazi-theme.toml"
 ln -sf "$SCRIPT_DIR/yazi.toml" "$HOME/.config/yazi/yazi.toml"
 ok "~/.config/yazi/yazi.toml -> $SCRIPT_DIR/yazi.toml"
+ln -sf "$SCRIPT_DIR/yazi-keymap.toml" "$HOME/.config/yazi/keymap.toml"
+ok "~/.config/yazi/keymap.toml -> $SCRIPT_DIR/yazi-keymap.toml"
 
 # ============================================
 # 6. tmux config

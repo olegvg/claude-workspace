@@ -10,6 +10,7 @@ tmux.conf      — tmux config (C-a prefix, true-color, vi keys, window presets)
 ws.fish        — Workspace launcher: Yazi + Claude Code + Shell pane
 yazi.toml      — Yazi config (panel ratios)
 yazi-theme.toml — Yazi theme config (Dracula)
+yazi-keymap.toml — Yazi keymap overrides (path-from-root plugin → `cr`)
 Dockerfile     — Container for Claude Code yolo mode (--dangerously-skip-permissions)
 README.md      — User-facing documentation
 ```
@@ -18,7 +19,8 @@ README.md      — User-facing documentation
 
 - **Shell:** fish. All scripts use `#!/usr/bin/env fish`.
 - **tmux prefix:** `C-a` (GNU Screen style), not the default `C-b`.
-- **Yazi install:** GitHub releases binary (not in Debian repos).
+- **Yazi install:** GitHub releases binary (not in Debian repos). Installs both `yazi` and the `ya` CLI from the same archive.
+- **Yazi plugins:** Installed via `ya pkg add` in `setup.sh` (e.g. `aresler/path-from-root`). Keybinds live in `yazi-keymap.toml`.
 - **Claude Code install:** Native installer (`curl -fsSL https://claude.ai/install.sh | bash`), not npm.
 - **Docker yolo mode:** Uses `node:20-slim` base image, runs as non-root `coder` user, mounts project at `/workspace`.
 - **Config management:** `setup.sh` symlinks files from this repo to their target locations (`~/.tmux.conf`, `~/bin/ws`). Edit files here, not in `~`.
